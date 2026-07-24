@@ -92,12 +92,14 @@ jobs:
           APK_NAME: ${{ steps.rename.outputs.apk_name }}
           MD5SUM: ${{ steps.rename.outputs.md5sum }}
           BUILD_TYPE: ${{ github.event.inputs.build_type || 'debug' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          mkdir -p artifacts
           cd artifacts
-          SIZE=$(du -h "$APK_NAME" | cut -f1)
-          BUILD_DATE_JKT=$(TZ="Asia/Jakarta" date '+%Y-%m-%d %H:%M %Z')
 
-          if [ -f "$APK_NAME" ]; then
+          if [ -n "$APK_NAME" ] && [ -f "$APK_NAME" ]; then
+            SIZE=$(du -h "$APK_NAME" | cut -f1)
+            BUILD_DATE_JKT=$(TZ="Asia/Jakarta" date '+%Y-%m-%d %H:%M %Z')
             CAPTION=$(cat <<EOF
           Nadeko Launcher (standalone) - ${BUILD_TYPE}
           Size: ${SIZE}
@@ -112,7 +114,7 @@ jobs:
                  "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
           else
             curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
-                 -F "text=Build Nadeko Launcher (${BUILD_TYPE}) GAGAL. Cek log di GitHub Actions." \
+                 -F "text=Build Nadeko Launcher (${BUILD_TYPE}) GAGAL. Log: ${RUN_URL}" \
                  "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
           fi
         shell: bash

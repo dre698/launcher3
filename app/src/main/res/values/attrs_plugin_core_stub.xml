@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Attr ini aslinya dideklarasikan di PluginCoreLib (AOSP frameworks/base
+  SystemUI plugin core), yang gak ikut di-copy ke standalone project ini.
+  Dideklarasikan ulang di sini biar styles.xml yang mereferensikannya lolos
+  compile.
+-->
+<resources>
+    <attr name="disabledIconAlpha" format="float" />
+    <attr name="loadingIconColor" format="color" />
+</resources>
