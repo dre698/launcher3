@@ -10,7 +10,7 @@
     <!-- Day of the Week -->
     <com.android.launcher3.quickspace.views.DoubleShadowTextView
         android:id="@+id/quickspace_day_of_week"
-        android:fontFamily="@font/SlateForOnePlus-Medium"
+        android:fontFamily="@font/slateforoneplus_medium"
         android:paddingStart="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
             android:id="@+id/quickspace_clock_hour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/SlateForOnePlus-Bold"
+            android:fontFamily="@font/slateforoneplus_bold"
             android:textColor="#FE4543"
             android:textSize="80sp"
             android:format12Hour="h"
@@ -45,7 +45,7 @@
             android:id="@+id/quickspace_clock_minute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/SlateForOnePlus-Bold"
+            android:fontFamily="@font/slateforoneplus_bold"
             android:textColor="?workspaceTextColor"
             android:textSize="80sp"
             android:format12Hour=":mm"
@@ -65,7 +65,7 @@
 
         <com.android.launcher3.quickspace.views.DoubleShadowTextView
             android:id="@+id/quickspace_date"
-            android:fontFamily="@font/SlateForOnePlus-Regular"
+            android:fontFamily="@font/slateforoneplus_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?workspaceTextColor"
@@ -116,7 +116,7 @@
         <!-- PSA Message -->
         <com.android.launcher3.quickspace.views.DoubleShadowTextView
             android:id="@+id/quickspace_psa_message"
-            android:fontFamily="@font/SlateForOnePlus-Regular"
+            android:fontFamily="@font/slateforoneplus_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?workspaceTextColor"
