@@ -85,6 +85,7 @@ dependencies {
 
     implementation(libs.androidx.emoji2)
     implementation(libs.androidx.emoji2.emojipicker)
+    implementation(libs.guava)
 
     // ---- Dependency yang BUTUH kerja tambahan (lihat NOTES.md) ----
     // TODO: vendor source dari frameworks/libs/systemui (iconloader_base,

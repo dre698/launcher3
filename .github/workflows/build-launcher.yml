@@ -47,10 +47,11 @@ jobs:
         env:
           BUILD_TYPE: ${{ github.event.inputs.build_type || 'debug' }}
         run: |
+          set -o pipefail
           if [ "$BUILD_TYPE" = "release" ]; then
-            ./gradlew assembleRelease --stacktrace
+            ./gradlew assembleRelease --stacktrace 2>&1 | tee build_log.txt
           else
-            ./gradlew assembleDebug --stacktrace
+            ./gradlew assembleDebug --stacktrace 2>&1 | tee build_log.txt
           fi
 
       - name: Locate APK
@@ -92,12 +93,11 @@ jobs:
           APK_NAME: ${{ steps.rename.outputs.apk_name }}
           MD5SUM: ${{ steps.rename.outputs.md5sum }}
           BUILD_TYPE: ${{ github.event.inputs.build_type || 'debug' }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           mkdir -p artifacts
-          cd artifacts
 
-          if [ -n "$APK_NAME" ] && [ -f "$APK_NAME" ]; then
+          if [ -n "$APK_NAME" ] && [ -f "artifacts/$APK_NAME" ]; then
+            cd artifacts
             SIZE=$(du -h "$APK_NAME" | cut -f1)
             BUILD_DATE_JKT=$(TZ="Asia/Jakarta" date '+%Y-%m-%d %H:%M %Z')
             CAPTION=$(cat <<EOF
@@ -113,8 +113,19 @@ jobs:
                  -F "parse_mode=Markdown" \
                  "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
           else
-            curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
-                 -F "text=Build Nadeko Launcher (${BUILD_TYPE}) GAGAL. Log: ${RUN_URL}" \
-                 "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+            BUILD_DATE_JKT=$(TZ="Asia/Jakarta" date '+%Y-%m-%d %H:%M %Z')
+            if [ -f "build_log.txt" ]; then
+              # Ambil bagian log yang relevan aja (500 baris terakhir) biar gak
+              # kegedean, filenya tetep dikirim utuh sebagai lampiran.
+              tail -n 500 build_log.txt > build_log_tail.txt
+              curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
+                   -F "document=@build_log_tail.txt;filename=build_log_${BUILD_TYPE}.txt" \
+                   -F "caption=Build Nadeko Launcher (${BUILD_TYPE}) GAGAL. Log 500 baris terakhir terlampir. Built: ${BUILD_DATE_JKT}" \
+                   "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+            else
+              curl -s -F "chat_id=${TELEGRAM_CHAT_ID}" \
+                   -F "text=Build Nadeko Launcher (${BUILD_TYPE}) GAGAL sebelum log sempat dibuat (kemungkinan gagal di step setup/checkout)." \
+                   "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+            fi
           fi
         shell: bash

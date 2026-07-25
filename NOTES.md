@@ -119,6 +119,30 @@ Masalah yang udah kefix:
   lain juga import ketiganya.
 - `androidx.appcompat` ketinggalan gak ditambahin ke dependency
 
+## 7. Round berikutnya: modul `modules/concurrent` ketinggalan
+
+Qualifier `@LightweightBackground` (dan 7 qualifier terkait: `Ui`,
+`ThreadPoolContext`, `BackgroundContext`, `UiContext`, `Background`,
+`ThreadPool`, `LightweightBackgroundContext`) plus `ExecutorsModule.kt`
+ternyata dari modul terpisah `modules/concurrent/` (punya `Android.bp`
+sendiri) yang beneran dipasang ke Dagger graph lewat `LauncherAppModule`
+(bareng `LauncherExecutorsModule` yang udah ada). Udah di-copy utuh ke
+`java/com/android/launcher3/concurrent/`.
+
+Ini juga butuh dependency baru: **Guava** (`com.google.common.util.concurrent.ListeningExecutorService`)
+— udah ditambahin ke `libs.versions.toml`.
+
+**Pelajaran:** kalau ada error qualifier/annotation Dagger yang gak ketemu
+lagi, kemungkinan besar itu dari modul kecil terpisah yang masih ketinggalan
+(pola yang sama kayak `dagger/` dan `src_plugins/` sebelumnya). Cek folder
+root repo asli (`find . -maxdepth 1 -type d`) buat modul yang belum ke-copy.
+
+## 8. Workflow: notifikasi Telegram sekarang kirim file log, bukan link
+
+Step "Build APK" sekarang nge-tee output ke `build_log.txt`. Kalau build
+gagal (APK gak ketemu), "Notify Telegram" ngirim 500 baris terakhir log itu
+sebagai file lampiran (`sendDocument`), bukan link ke halaman Actions.
+
 ## 6. Kategori A & B: sudah di-stub proaktif
 
 Gak nunggu error round berikutnya, saya udah nyiapin duluan:
