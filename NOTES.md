@@ -93,3 +93,63 @@ Muncul di `ItemInfo.java`, `SettingsMisc.java`, `PreviewSurfaceRenderer.java`,
 - Background blur (butuh privileged SurfaceFlinger access)
 - Quickspace weather bar ala Lunaris ROM
 - Auto-replace default Home tanpa prompt user (privileged-only)
+
+## 5. Update progress (setelah beberapa ronde build di GitHub Actions)
+
+Masalah yang udah kefix:
+- AGP 9.x built-in Kotlin conflict → `android.builtInKotlin=false` di gradle.properties
+- Dagger+KSP2 crash (`DaggerSuperficialValidation$UnexpectedException`) → `ksp.useKSP2=false`
+- Font resource nama invalid (`SlateForOnePlus-*.ttf`) → di-rename lowercase+underscore
+- 10 resource `@android:color/system_*_dim_*` gak ada di public SDK → di-fallback ke
+  warna non-dim yang paling deket
+- Attr `disabledIconAlpha`/`loadingIconColor` (aslinya dari PluginCoreLib internal)
+  → dideklarasi ulang manual di `attrs_plugin_core_stub.xml`
+- Folder `dagger/` di root repo (qualifier `@ApplicationContext` dkk) ketinggalan
+  gak ke-copy → udah ditambahin ke `java/com/android/launcher3/dagger/`
+- Style `Theme.SubSettingsBase.Expressive` (buat `TrustAppsActivity`, fitur
+  LineageOS-specific) gak ada → diarahin ke `HomeSettings.Theme` yang valid
+- `com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity`
+  (dari SettingsLib AOSP, gak ada di repo) → dibikin stub minimal extends
+  `AppCompatActivity` (efek visual collapsing toolbar hilang, fitur tetap jalan)
+- **3 class fundamental hilang total dari seluruh repo**: `SafeCloseable`
+  (`com.android.launcher3.util`), `ResourceBasedOverride` dan
+  `MainThreadInitializedObject` (`com.android.launcher3.util.override`) —
+  ditulis ulang berdasarkan implementasi standar AOSP Launcher3. Ini
+  kemungkinan bakal kepake lagi di error-error berikutnya karena banyak file
+  lain juga import ketiganya.
+- `androidx.appcompat` ketinggalan gak ditambahin ke dependency
+
+## 6. Kategori A & B: sudah di-stub proaktif
+
+Gak nunggu error round berikutnya, saya udah nyiapin duluan:
+
+- **Kategori A** (`com.android.systemui.plugins.*`): ternyata sebagian besar
+  file-nya ASLI ada di source (`src_plugins/` folder di root repo, punya
+  `LauncherPluginLib`) tapi ketinggalan gak ke-copy pas scaffold awal. Udah
+  di-copy: `AllAppsRow`, `ResourceProvider`, `CustomWidgetPlugin`,
+  `LauncherOverlayPlugin`, `LauncherOverlayManager` (+ shared), `OneSearch`,
+  `HotseatPlugin`, `FirstScreenWidget`, `IconProcessorPlugin`,
+  `NetworkFetcherPlugin`. Cuma `Plugin`, `PluginListener`, dan
+  `annotations.ProvidesInterface` yang beneran gak ada di repo manapun
+  (dari PluginCoreLib eksternal) — itu ditulis manual sebagai stub minimal.
+
+- **Kategori B** (`wm.shell.Flags` dkk) + flags launcher3/systemui.shared:
+  semua di-stub return `false`. Termasuk `com.android.launcher3.Flags` (44
+  method, dari file aconfig di folder `aconfig/`), `com.android.systemui.shared.Flags`,
+  `com.android.wm.shell.Flags`, `BlurUtils`, `SysUiStatsLog` (cuma konstanta
+  int), `BubbleAnythingFlagHelper`, `EntryPoint` (enum).
+
+**Kalau nanti error compile nyebut salah satu Flags method yang GAK ada di
+list saya** (kemungkinan ada yang kelewatan), tinggal tambahin method baru
+return `false` ke file Flags yang sesuai — polanya udah jelas kelihatan.
+
+**Pola umum yang kelihatan sejauh ini:** source Launcher3-16.2 ini sepertinya
+hasil reorganisasi/refactor branch Android 16 yang beberapa modul kecilnya
+(qualifier Dagger, util.override, plugin lib, aconfig flags) ketinggalan pas
+di-zip/di-share — bukan masalah dari cara kita nge-porting. Kalau masih ada
+class serupa yang hilang di ronde build berikutnya, pola fix-nya sama: cek
+apakah class itu genuinely gak ada di repo sama sekali
+(`find . -iname "*NamaClass*"`), kalau iya tulis ulang minimal
+implementation-nya berdasarkan API yang dipanggil sama file yang import dia.
+
+

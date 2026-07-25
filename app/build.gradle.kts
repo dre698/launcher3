@@ -59,6 +59,7 @@ android {
 dependencies {
     // ---- Dependency yang tinggal resolve dari Maven, aman ----
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.fragment.ktx)
